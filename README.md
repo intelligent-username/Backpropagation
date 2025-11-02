@@ -114,6 +114,9 @@ In steps, this is:
 
 ```md
 Backpropogation/
+├── data/                   # The datasets used in the demos
+├── imgs/                   # Just tough images
+├── models/                 # Saved models (pkl & h5)
 ├── nn/
 │   ├── activations.py      # Activation functions & their derivatives
 │   └── gd.py               # Gradient Descent
@@ -121,15 +124,13 @@ Backpropogation/
 │   ├── loss.py             # Loss functions & their derivatives
 │   ├── network.py          # Actual Neural Network Structure, composed of layers
 ├── utils/
-│   ├── loader.py           # Preprocess the data
+│   ├── loader.py           # Preprocessing the data
 │   ├── metrics.py          # Return accuracy, specificity, and precision to evaluate the model.
 │   ├── splitter.py         # Split data into training, validation, and test sets.
 │   └── visualizer.py       # For visualizing the training and/or results. Has never and probably will never be actually implemented.
-├── data/                   # The datasets used in the demos
-├── demos.ipynb             # Jupyter notebook with demos
-├── requirements.txt        # Required packages
-├── README.md               # This file
-└── LICENSE                 # License information
+├── demo1.ipynb             # Demonstrating digit classification
+├── demo2.ipynb             # Demonstrating student grade prediction
+└── main.py                 # Small secondary explanation of how to use the library
 ```
 
 ## Installation & Usage

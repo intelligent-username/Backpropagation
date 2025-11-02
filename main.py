@@ -12,7 +12,7 @@ import numpy as np
 
 def main():
     print("Yo!!!! This file is going to do a small walkthrough on how to use the neural network library.")
-    print("For actual real-life demos, go through the demos.ipynb file.")
+    print("For actual real-life demos, go through the demo.ipynb files.")
 
     print("First, we have our loss functions and their derivatives. In loss.py, several are implemented. In the case of this project, I've only implemented the ones that would be required for the demos and some basic ones like MSE. Don't forget to import the loss functions that you need. The choice of a loss function is very important, for example the image classification task had about 30% accuracy with MSE but jumped to over 70% by just switching to cross-entropy.")
 
