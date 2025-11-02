@@ -3,7 +3,7 @@ from .network import NeuralNetwork
 import numpy as np
 from math import inf
 
-def fit(network: NeuralNetwork, X_train: np.ndarray, y_train: np.ndarray, X_val: np.ndarray, y_val: np.ndarray, X_test: np.ndarray, y_test: np.ndarray, max_epochs: int = 100, learning_rate: float = 0.01, patience: int = 20, min_loss: float = 1e-7) -> float:
+def fit(network: NeuralNetwork, X_train: np.ndarray, y_train: np.ndarray, X_val: np.ndarray, y_val: np.ndarray, X_test: np.ndarray, y_test: np.ndarray, max_epochs: int = 100, learning_rate: float = 0.01, patience: int = 7, min_loss: float = 1e-7) -> float:
     """
     Trains a neural network using gradient descent.
 
@@ -52,7 +52,14 @@ def fit(network: NeuralNetwork, X_train: np.ndarray, y_train: np.ndarray, X_val:
             # Backward pass
             network.backward(y, learning_rate)
 
+        # Calculate L2 penalty for the entire network
+        l2_penalty = 0
+        for layer in network.layers:
+            if hasattr(layer, 'l2_lambda') and layer.l2_lambda > 0:
+                l2_penalty += 0.5 * layer.l2_lambda * np.sum(np.square(layer.weights))
+
         train_error /= train_len
+        train_error += l2_penalty
 
         # --- Validation ---
         val_error = 0
@@ -60,6 +67,7 @@ def fit(network: NeuralNetwork, X_train: np.ndarray, y_train: np.ndarray, X_val:
             output = network.forward(x)
             val_error += network.loss(y, output)
         val_error /= train_val
+        val_error += l2_penalty
 
         # --- Early stopping based on conds ---
         if val_error > prev_loss:

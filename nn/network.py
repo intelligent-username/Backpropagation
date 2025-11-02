@@ -3,7 +3,7 @@ from datetime import datetime
 import pickle
 from typing import Callable
 import os
-
+import h5py
 
 class NeuralNetwork:
     def __init__(self, loss: Callable, loss_derivative: Callable):
@@ -13,12 +13,31 @@ class NeuralNetwork:
         self.loss_derivative = loss_derivative
 
     def add_layer(self, layer) -> None:
+        """
+        Adds a single layer to the neural network.
+        Args:
+            layer: A Layer object to add to the network.
+        Mutates the neural network in-place.
+        """
         self.layers.append(layer)
     
     def add_layers(self, layers: list) -> None:
+        """
+        Adds multiple layers to the neural network.
+        Args:
+            layers (list): A list of Layer objects to add to the network.
+        
+        Mutates the neural network in-place.
+        """
         self.layers.extend(layers)
 
     def forward(self, x) -> np.ndarray:
+        """
+        Forward pass part of the algorithm.
+        Args:
+            x: The input data.
+        Finds the output of the neural network for the given input data.
+        """
         # ensure (batch, features)
         if isinstance(x, np.ndarray) and x.ndim == 1:
             x = x.reshape(1, -1)
@@ -28,7 +47,14 @@ class NeuralNetwork:
         return self.forward_val
 
     def backward(self, y_true, learning_rate) -> None:
-
+        """
+        Backward pass part of the backpropagation algorithm.
+        Args:
+            y_true: The true target values.
+            learning_rate: The learning rate for weight updates.
+        
+        Mutates the neural network's weights in-place.
+        """
         if isinstance(y_true, np.ndarray) and y_true.ndim == 1:
             y_true = y_true.reshape(1, -1)
 
@@ -71,8 +97,22 @@ class NeuralNetwork:
         os.makedirs(dirpath, exist_ok=True)
         full_path = os.path.join(dirpath, filename)
 
+        # Pickle version of the model
         with open(full_path, 'wb') as f:
             pickle.dump(self, f)
+
+        # Now HDF5 version
+        hdf5_path = full_path.replace(".pkl", ".h5")
+        with h5py.File(hdf5_path, "w") as f:
+            f.attrs["num_layers"] = len(self.layers)
+            # Optionally store network-level metadata
+            for i, layer in enumerate(self.layers):
+                grp = f.create_group(f"layer_{i}")
+                grp.create_dataset("weights", data=layer.weights)
+                grp.create_dataset("biases", data=layer.biases)
+                # store layer-specific info if needed, e.g. activation
+                if hasattr(layer, "activation") and callable(layer.activation):
+                    grp.attrs["activation"] = layer.activation.__name__
 
     def predict(self, x: np.ndarray) -> np.ndarray:
         """

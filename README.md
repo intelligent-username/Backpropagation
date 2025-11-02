@@ -115,17 +115,21 @@ In steps, this is:
 ```md
 Backpropogation/
 ├── nn/
-│   ├── network.py          # Actual Neural Network Structure, composed of layers
-│   ├── layer.py            # Layers, which are just matrices of weights that store past activations (store the information necessary for the math)
 │   ├── activations.py      # Activation functions & their derivatives
-│   ├── loss.py             # Loss functions & their derivatives
 │   └── gd.py               # Gradient Descent
+│   ├── layer.py            # Layers, which are just matrices of weights that store past activations (store the information necessary for the math)
+│   ├── loss.py             # Loss functions & their derivatives
+│   ├── network.py          # Actual Neural Network Structure, composed of layers
 ├── utils/
-│   ├── loader.py           # Preprocessing data
+│   ├── loader.py           # Preprocess the data
 │   ├── metrics.py          # Return accuracy, specificity, and precision to evaluate the model.
-│   └── visualizer.py       # For visualizing the training
+│   ├── splitter.py         # Split data into training, validation, and test sets.
+│   └── visualizer.py       # For visualizing the training and/or results. Has never and probably will never be actually implemented.
 ├── data/                   # The datasets used in the demos
-├── tests/                  # Tests to ensure nothing is broken
+├── demos.ipynb             # Jupyter notebook with demos
+├── requirements.txt        # Required packages
+├── README.md               # This file
+└── LICENSE                 # License information
 ```
 
 ## Installation & Usage
@@ -149,38 +153,38 @@ Backpropogation/
 
     ```bash
     # Create and activate a virtual environment (optional)
-    python -m venv venv
-    source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
+    python -m venv venv               # Or through conda or something else :)
+    source venv/bin/activate          # On Windows, use `venv\Scripts\activate`
 
     # Install the required packages
-    pip install -r requirements.txt
+    pip install -r requirements.txt   # Or through another package manager if you prefer
     ```
 
 ### Usage
 
-To use the neural network, you can import the `NeuralNetwork` class, define your layers and activations, and then train it on your data.
+To use the neural network, import the `NeuralNetwork` class, define your layers and activations, and then train it on your data. Make sure to choose [appropriate loss functions](https://www.github.com/intelligent-username/Loss-Functions), activation functions, and the like.
 
 Here's a quick example:
 
 ```python
-from nn.network import NeuralNetwork
-from nn.layer import Layer
-from nn.activations import tanh, tanh_prime
-from nn.loss import mse, mse_prime
-from nn.gd import fit
+  from nn.network import NeuralNetwork
+  from nn.layer import Layer
+  from nn.activations import tanh, tanh_prime
+  from nn.loss import mse, mse_prime
+  from nn.gd import fit
 
-# 1. Define your network architecture
-net = NeuralNetwork(loss=mse, loss_derivative=mse_prime)
-net.add_layer(Layer(2, 3, tanh, tanh_prime))
-net.add_layer(Layer(3, 1, tanh, tanh_prime))
+  # 1. Define your network architecture
+  net = NeuralNetwork(loss=mse, loss_derivative=mse_prime)
+  net.add_layer(Layer(2, 3, tanh, tanh_prime))
+  net.add_layer(Layer(3, 1, tanh, tanh_prime))
 
-# 2. Load your data (X_train, y_train)
+  # 2. Load your data (X_train, y_train)
 
-# 3. Train the network
-fit(net, X_train, y_train, epochs=1000, learning_rate=0.01)
+  # 3. Train the network
+  fit(net, X_train, y_train, epochs=1000, learning_rate=0.01)
 
-# 4. Make predictions
-# predictions = net.predict(X_test)
+  # 4. Make predictions
+  # predictions = net.predict(X_test)
 ```
 
 ## Data Bibliography

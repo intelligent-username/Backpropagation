@@ -23,11 +23,12 @@ class Layer:
     d_activation: Callable      # Derivative of activation
     input_cache: np.ndarray     # Stores input X for backprop
     z_cache: np.ndarray         # Stores weighted sum before activation
+    l2_lambda: float            # L2 regularization strength
 
 
     def __init__(self, input_size: int, output_size: int, 
                  activation: Callable, d_activation: Callable, 
-                 mask: np.ndarray | None = None):
+                 mask: np.ndarray | None = None, l2_lambda: float = 0.0):
 
         # Initial weights (random)
         # Used to be zero but that'll probably break the initial few steps at least
@@ -35,6 +36,7 @@ class Layer:
         self.weights = np.random.randn(input_size, output_size) * 0.01 # Initialize randomly
         self.biases = np.zeros((1, output_size))
         self.mask = np.ones((input_size, output_size)) if mask is None else mask
+        self.l2_lambda = l2_lambda
 
         # Activation functions
         self.activation = activation
@@ -78,6 +80,9 @@ class Layer:
 
         # Gradients
         grad_w = np.dot(self.input_cache.T, dz) * self.mask
+        # Add L2 regularization gradient
+        if self.l2_lambda > 0:
+            grad_w += self.l2_lambda * self.weights
         grad_b = np.sum(dz, axis=0, keepdims=True)
         grad_input = np.dot(dz, (self.weights * self.mask).T)
 

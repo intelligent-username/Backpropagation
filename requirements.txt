@@ -10,3 +10,6 @@ matplotlib
 # Specifically for the digits dataset (preproc)
 Pillow
 
+# For writing HDF5 model files
+h5py
+
