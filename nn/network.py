@@ -123,19 +123,16 @@ class NeuralNetwork:
     @staticmethod
     def load_model(path: str) -> 'NeuralNetwork':
         """
-        Loads a neural network model from the specified path using pickle.
+        Loads a neural (pickle) network model from the specified path using pickle.
 
         Args:
             path (str): The file path to load the model from.
 
-        Returns:
-            NeuralNetwork: The loaded neural network model.
+        Returns
+        -------
+        NeuralNetwork
+            The loaded model instance.
         """
         with open(path, 'rb') as f:
             model = pickle.load(f)
         return model
-    
-    def __str__(self):
-        """
-        'Prints' the neural network by creating a matplotlib visualization
-        """

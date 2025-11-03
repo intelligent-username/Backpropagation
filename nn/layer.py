@@ -65,6 +65,7 @@ class Layer:
         return self.activation(z)
 
     def backward(self, grad_output: np.ndarray, lr: float) -> np.ndarray:
+        
         # grad_output: derivative of loss w.r.t output of this layer
         # lr: learning rate
         # May be adjusted through some scheduler algorithm btw
