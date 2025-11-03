@@ -6,6 +6,39 @@ import csv
 from PIL import Image
 import os
 
+
+def _normalize_columns(matrix: np.ndarray) -> np.ndarray:
+    """Normalize each feature column to the [0, 1] range."""
+    if matrix.size == 0:
+        return matrix.astype(np.float32)
+
+    matrix = matrix.astype(np.float32)
+    col_min = matrix.min(axis=0)
+    col_max = matrix.max(axis=0)
+    denom = np.where(col_max - col_min == 0, 1.0, col_max - col_min)
+    return (matrix - col_min) / denom
+
+
+def load_student_dataset(file_path: str) -> tuple[np.ndarray, np.ndarray]:
+    """Load a student grade CSV with categorical encoding and feature scaling."""
+    df = pd.read_csv(file_path, sep=';')
+
+    if 'G3' not in df.columns:
+        raise ValueError("Expected column 'G3' to be present in the dataset.")
+
+    X_df = df.drop(columns=['G3'])
+    y_series = df['G3']
+
+    # Encode categorical features so the network can consume them.
+    categorical_cols = X_df.select_dtypes(include=['object']).columns
+    if len(categorical_cols) > 0:
+        X_df = pd.get_dummies(X_df, columns=categorical_cols)
+
+    X = _normalize_columns(X_df.to_numpy(dtype=np.float32))
+    Y = y_series.to_numpy(dtype=np.float32).reshape(-1, 1)
+
+    return X, Y
+
 def one_hot_encode(labels, num_classes):
     labels = np.asarray(labels)
     if labels.size == 0:
