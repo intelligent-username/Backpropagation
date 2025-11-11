@@ -26,19 +26,19 @@ Imagine we're trying to fit a multi-layered model to data. In real life, we may 
 
 At its core, backpropagation takes reverse-mode differentiation and uses dynamic programming to make the calculation/storing process more efficient.
 
-Automatic differentiation is among the simplest numerical methods in machine learning. Simply put when we have a 'nest' of functions $\hat{y} = f_n(f_{n-1}(...f_1(x))) + b$, and we want to find $\frac{d \hat{y}}{d x}$, we can use the chain rule, which gives:
+Automatic differentiation is among the simplest numerical methods in machine learning. Simply put when we have a 'nest' of functions $\hat{y} = f_n(f_{n-1}(...f_1(x))) + b$, and we want to find $\frac{\partial \hat{y}}{\partial x}$, we can use the chain rule, which gives:
 
 $$
-\frac{dy}{d x} = \frac{d f_n}{d f_{n-1}} \cdot \frac{d f_{n-1}}{d f_{n-2}} \cdots \frac{d f_1}{d x}
+\frac{\partial y}{\partial x} = \frac{\partial f_n}{\partial f_{n-1}} \cdot \frac{\partial f_{n-1}}{\partial f_{n-2}} \cdots \frac{\partial f_1}{\partial x}
 $$
 
 In autodifferentiation, we read each partial derivative and multiply to get the final result. This can be done in two ways: **forward mode** and **reverse mode**.
 
 Forward mode is when we read 'into' the function from the 'inside out', i.e. from the inputs expanding out to the outputs, $f_1$ out to $f_n$, calculating the values of the functions and derivatives as we go. Each intermediate derivative is computed alongside the function value.
 
-So, we first find $f_1(x)$ and $\frac{d f_1}{d x}$, then use those to find $f_2(f_1(x))$ and $\frac{d f_2}{d f_1}$, and so forth.
+So, we first find $f_1(x)$ and $\frac{\partial f_1}{\partial x}$, then use those to find $f_2(f_1(x))$ and $\frac{\partial f_2}{\partial f_1}$, and so forth.
 
-In reverse mode, however, we calculate the values of the functions as we work 'into' the function, but then we propagate back out, finding the derivatives in the order $\frac{\partial{f_n}}{dx}$ ... $\frac{\partial{f_1}}{dx}$. We do the same function evaluations first, cache results, and propagate sensitivities backward to compute derivatives.
+In reverse mode, however, we calculate the values of the functions as we work 'into' the function, but then we propagate back out, finding the derivatives in the order $\frac{\partial{f_n}}{\partial x}$ ... $\frac{\partial{f_1}}{\partial x}$. The intermediate values from the forward pass are cached and later used to multiply the Jacobians in reverse. We do the same function evaluations first, cache results, and propagate sensitivities backward to compute derivatives.
 
 In backpropagation, we use reverse mode since it's more efficient (there's almost always more neurons than outputs).
 
@@ -56,16 +56,18 @@ Which can be visualized as a series of layers:
 
 In real life, we're not just *given* equations, so we use neural networks to estimate what this function is going to be, based on just the features (inputs) and the labels (outputs).
 
+Also, note that most neural networks are made up of more layers and conencted in more complex ways, this is just an illustrative example to see how to visualize the equations.
+
 Some terminology:
 
 - **Neural network**: the entire composite function.
 - **Layer**: the set of neurons at the same 'depth' of the network.
-- **Neuron**: a single unit within the neural network that applies a non-linear activation and a weighted sum. Sometimes called a node. They take in some number of inputs, apply weights and biases, and pass the result to an activation function to get their result.
+- **Neuron**: a single unit within the neural network that applies a non-linear activation and a weighted sum. It's sometimes called a node. The process is to (1) take in some number of inputs, (2) apply weights and biases, and (3) pass the result to an activation function to get their result. This is always done in the same way.
 - **Activation functions**: functions that determine the output of a neuron by applying a non-linear transformation to the input. Without them, we would just be composing a bunch of linear functions, which would be equivalent to a single linear function, thus regression to simple regression tasks instead of actually modelling complex curves.
 
 ![Activation Functions](imgs/a_f.png)
 
-- **Perceptron**: Computes $y = f(wx+ b)$ and maps an input to either $0$ or $1$, serving as a binary classifier. These are rarely used nowadays, differentiable activation functions at or near the output are preferred instead.
+- **Perceptron**: Computes $y = f(wx+ b)$ for binary classification. Modern networks use differentiable activations in all layers, making classical perceptrons mostly historical.
 
 Types of neural networks:
 
@@ -93,10 +95,10 @@ $$
 In steps, this is:
 
 1. **Initiate**: start with a neural network of weights and biases
-2. **'Loss Term'**: start computing the loss at the current point and its derivative to find the direction to move.
+2. **'Loss Term'**: Compute the forward pass to get network outputs, then compute the loss.
 3. **Forward Pass**: compute the output of the network by evaluating each neuron from left to right, caching intermediate values.
 4. **Backward Pass**: compute the derivative of the loss with respect to every parameter by applying the chain rule in reverse. Start from $\frac{\partial L}{\partial \hat{y}}$ and move backward through each layer, using cached values from the forward pass.
-5. **Gradient Aggregation**: combine the local derivatives from each neuron to get the updated gradients.
+5. **Gradient Aggregation**: combine the local derivatives from each neuron to get the updated gradient.
 6. **Parameter Update**: once all partial gradients are known, multiply by the learning rate and adjust the weights and biases.
 7. **Iterate**: continue until convergence criteria are met (for example, predictions are very [similar](https://github.com/intelligent-username/Similarity-Metrics) to labels).
 
@@ -107,7 +109,7 @@ In steps, this is:
 ```md
 Backpropagation/
 ├── data/                   # The datasets used in the demos
-├── imgs/                   # Just tough images
+├── imgs/                   # Just images for this writeup
 ├── models/                 # Saved models (pkl & h5)
 ├── nn/
 │   ├── activations.py      # Activation functions & their derivatives
@@ -172,12 +174,14 @@ Here's a quick example:
   net.add_layer(Layer(3, 1, tanh, tanh_derivative))
 
   # 2. Load your data (X_train, y_train, X_val, y_val, X_test, y_test)
+  ...
 
-  # 3. Train the network
+  # 3. Then, train the network
   fit(net, X_train, y_train, X_val, y_val, X_test, y_test, max_epochs=1000, learning_rate=0.01)
 
   # 4. Make predictions
   # predictions = net.predict(X_test)
+           # Evaluate accuracy, test with new data, etc. as needed
 ```
 
 ## Data Bibliography

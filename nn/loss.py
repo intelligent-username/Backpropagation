@@ -1,49 +1,54 @@
-# Loss functions
+"""Loss functions and their derivatives.
+
+Conventions
+-----------
+- y_true and y_pred may be 1D or 2D. Functions reshape to (batch, dims) as needed.
+- Derivatives return averages over the batch where applicable.
+"""
 
 import numpy as np
 
 # Only Mean Squared Error right now, might implement more later but probably unnecessary for this generic demo
 
 def MSE(y_true, y_pred):
-    """
-    Calculates the Mean Squared Error loss.
+    """Mean Squared Error loss.
 
-    Args:
-        y_true: The true target values.
-        y_pred: The predicted values.
+    Parameters
+    ----------
+    y_true, y_pred : array-like
+        True targets and predictions with broadcastable shape.
 
-    Returns:
-        The mean squared error.
+    Returns
+    -------
+    float
+        Average 0.5 * (y_true - y_pred)^2 over all elements.
     """
     # Divide by two to make the constant for the derivative simpler
     return (((y_true - y_pred) ** 2).mean()/2)
 
 
 def MSE_derivative(y_true, y_pred):
-    """
-    Calculates the derivative of the Mean Squared Error loss.
+    """Derivative of MSE loss with the 0.5 factor: (y_pred - y_true) / N.
 
-    Args:
-        y_true: The true target values.
-        y_pred: The predicted values.
-
-    Returns:
-        The derivative of the MSE loss, averaged.
+    Returns the mean gradient per element, where N is the total number of elements.
     """
     return (y_pred - y_true) / y_true.size
 
 
 def huber_loss(y_true, y_pred, delta=1.0):
-    """
-    Calculates the Huber loss between true and predicted values.
+    """Huber loss (quadratic near 0, linear beyond |error|>delta).
 
-    Args:
-        y_true: The true target values.
-        y_pred: The predicted values.
-        delta (float): The point where the loss changes from quadratic to linear.
+    Parameters
+    ----------
+    y_true, y_pred : array-like
+        Targets and predictions.
+    delta : float, default 1.0
+        Threshold separating quadratic and linear regions.
 
-    Returns:
-        The mean Huber loss.
+    Returns
+    -------
+    float
+        Mean Huber loss over all elements.
     """
     error = y_true - y_pred
     is_small_error = np.abs(error) <= delta
@@ -52,57 +57,35 @@ def huber_loss(y_true, y_pred, delta=1.0):
     return np.where(is_small_error, squared_loss, linear_loss).mean()
 
 def huber_loss_derivative(y_true, y_pred, delta=1.0):
-    """
-    Calculates the derivative of the Huber loss.
-
-    Args:
-        y_true: The true target values.
-        y_pred: The predicted values.
-        delta (float): The threshold for the derivative.
-
-    Returns:
-        The derivative of the Huber loss, averaged.
-    """
+    """Derivative of Huber loss, averaged over all elements."""
     error = y_pred - y_true
     derivative = np.where(np.abs(error) <= delta, error, delta * np.sign(error))
     return derivative / y_true.size
 
 def mae(y_true, y_pred):
-    """
-    Calculates the Mean Absolute Error loss.
-
-    Args:
-        y_true: The true target values.
-        y_pred: The predicted values.
-
-    Returns:
-        The mean absolute error.
-    """
+    """Mean Absolute Error loss: mean(|y_true - y_pred|)."""
     return np.abs(y_true - y_pred).mean()
 
 def mae_derivative(y_true, y_pred):
-    """
-    Calculates the derivative of MAE at y_pred.
-
-    Args:
-        y_true: The true target values.
-        y_pred: The predicted values.
-
-    Returns:
-        The derivative of the MAE loss, averaged.
-    """
+    """Subgradient of MAE: sign(y_pred - y_true) / N, averaged over elements."""
     return np.sign(y_pred - y_true) / y_true.size
 
 def cross_entropy(y_true: np.ndarray, y_pred: np.ndarray, delta: float = 1e-6) -> float:
-    """
-    Cross entropy loss. 
-    Specially good for classification tasks.
-    Args:
-        y_true (np.ndarray): True labels, one-hot encoded.
-        y_pred (np.ndarray): Predicted probabilities from the model.
-        delta (float): Small value to avoid log(0).
-    Returns:
-        float: The cross-entropy loss.
+    """Cross-entropy loss for one-hot targets and probability predictions.
+
+    Parameters
+    ----------
+    y_true : np.ndarray
+        One-hot encoded true labels of shape (batch, classes) or (classes,).
+    y_pred : np.ndarray
+        Predicted probabilities of the same shape as y_true.
+    delta : float, default 1e-6
+        Added for numerical stability to avoid log(0).
+
+    Returns
+    -------
+    float
+        Average cross-entropy across the batch.
     """
 
     y_pred = np.clip(y_pred, delta, 1.0 - delta)
@@ -116,7 +99,12 @@ def cross_entropy(y_true: np.ndarray, y_pred: np.ndarray, delta: float = 1e-6) -
     return float(-np.mean(np.sum(y_true * np.log(y_pred), axis=1)))
 
 def cross_entropy_derivative(y_true: np.ndarray, y_pred: np.ndarray) -> np.ndarray:
-    # with softmax on the output layer, dL/dz = (y_pred - y_true)
+    """Derivative of cross-entropy w.r.t. softmax logits: y_pred - y_true.
+
+    When the output layer uses softmax, the gradient of the loss w.r.t.
+    the logits simplifies to (y_pred - y_true), assuming y_pred are the
+    softmax probabilities.
+    """
     if y_true.ndim == 1:
         y_true = y_true.reshape(1, -1)
     if y_pred.ndim == 1:
